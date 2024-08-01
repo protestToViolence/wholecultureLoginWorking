@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Search</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('indian_state_city_list.json')
+                .then(response => response.json())
+                .then(data => {
+                    populateStates(data);
+                })
+                .catch(error => console.error('Error fetching JSON:', error));
+        });
+
+        function populateStates(data) {
+            let stateSelect = document.getElementById("state");
+            let states = [...new Set(data.map(entry => entry.State))]; // Get unique states
+
+            states.forEach(state => {
+                let option = document.createElement('option');
+                option.value = state;
+                option.text = state;
+                stateSelect.appendChild(option);
+            });
+
+            stateSelect.addEventListener("change", function () {
+                populateCities(data, stateSelect.value);
+            });
+        }
+
+        function populateCities(data, selectedState) {
+            let citySelect = document.getElementById("city");
+            citySelect.innerHTML = '<option value="">City</option>'; // Clear existing options
+
+            data.forEach(entry => {
+                if (entry.State === selectedState) {
+                    let option = document.createElement('option');
+                    option.value = entry.City;
+                    option.text = entry.City;
+                    citySelect.appendChild(option);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Search Events</h2>
+    <form action="/search" method="post">
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <input type="text" class="form-control" name="title" placeholder="Title">
+            </div>
+            <div class="form-group col-md-3">
+                <select id="state" class="form-control" name="state">
+                    <option value="">Select State</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <select id="city" class="form-control" name="city">
+                    <option value="">City</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <select class="form-control" name="category">
+                    <option value="">Category</option>
+                    <!-- Add category options here -->
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                <input type="date" class="form-control" name="start_date" placeholder="Start Date">
+            </div>
+            <div class="form-group col-md-3">
+                <input type="date" class="form-control" name="end_date" placeholder="End Date">
+            </div>
+            <div class="form-group col-md-3">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+            <div class="form-group col-md-3">
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
